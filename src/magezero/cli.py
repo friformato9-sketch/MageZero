@@ -7,6 +7,7 @@ Commands:
   mz play  --deck X [--version N]   host a local AI player (stub)
   mz import <file>                  auto-detects .dck or .mz (.txt stubbed)
   mz export --deck X --version N    pack model into a .mz bundle
+  mz bench  --deck-a A --deck-b B   N games + AI blunder counts (see bench.py)
 """
 import argparse
 import json
@@ -16,7 +17,7 @@ import zipfile
 from pathlib import Path
 
 from magezero.util.config import load_all
-from magezero import runner
+from magezero import bench, runner
 
 
 # ─── train ───────────────────────────────────────────────────
@@ -153,6 +154,8 @@ def main() -> None:
     p_export.add_argument("--deck", required=True)
     p_export.add_argument("--version", type=int, required=True)
     p_export.set_defaults(func=cmd_export)
+
+    bench.add_parser(sub)
 
     args = parser.parse_args()
     args.func(args)
