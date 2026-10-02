@@ -1,0 +1,42 @@
+# simulate-modern.yml — play Modern games for spectating/analysis, no training data.
+# Run from the repo root:  mz batch --config configs/simulate-modern.yml
+# The engine runs inside xmage/, so relative paths below are relative to xmage/.
+#
+# Writes into game_log_dir:
+#   validation.json  — unknown cards / format errors per deck (exit code 2 if invalid)
+#   game_N.jsonl     — turn-by-turn log, one event per line, flushed live
+#                      (game_start, turn_start, log, life, turn_end, game_end)
+#   summary.json     — winner, end reason and turns of every game
+
+mode: simulate        # train (default) | simulate
+format: modern        # validate both decks before playing; omit to skip
+goes_first: random
+game_mode: normal
+
+player_a:
+  deckPath: ../decks/modern/Modern-Burn.txt
+  type: minimax       # minimax (no model needed) | mcts
+  mcts: {offline_mode: true}
+  gameplay: {mulligans_enabled: false, manual_tapping: false}
+
+player_b:
+  deckPath: ../decks/modern/Modern-BorosEnergy.txt
+  type: minimax
+  mcts: {offline_mode: true}
+  gameplay: {mulligans_enabled: false, manual_tapping: false}
+
+training:
+  games: 1
+  threads: 1
+  max_turns: 40       # XMage counts each player's turn
+  max_minutes: 15
+
+server:
+  host: localhost
+  port: 50052
+  opponent_port: 50053
+
+logging:
+  save_final_wr: false
+  log_feature_hash: false
+  game_log_dir: ../.mz_tmp/simulate
