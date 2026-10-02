@@ -72,6 +72,15 @@ $env:MZ_HEAP = '12g'
 `configs/game-prowess.yml` lowers the MCTS budget (800 sims / 2 s per decision) for this PC.
 `--resume` continues the active run in `runs/` with the configuration it was started with.
 
+## Modern metagame decks
+
+`decks/modern/Modern-Meta-*.txt` are the representative lists of MTGGoldfish's top 15 Modern
+archetypes (snapshot of 2026-10-02, all valid on the engine), for opponent pools and simulations.
+They come from the bot repo's `metagame/modern/` (refreshed by its `scripts/update_metagame.py`),
+which also holds a game plan per archetype for the play advisor. Copy new lists into `xmage/decks/`
+too, where `mz` looks decks up by name. The older `Modern-Goryos`, `Modern-BorosEnergy`,
+`Modern-Burn` and `Modern-Prowess` lists stay as they are (training runs use them).
+
 ## Updating the engine with new XMage cards
 
 New cards exist only once XMage implements them in Java, so updating means merging upstream
