@@ -55,7 +55,16 @@ mz batch --config configs/simulate-modern.yml
 
 # rules scenario (JSON spec documented in ScenarioRunner, examples in Mage.MageZero.Scenario/examples)
 xmage/mz-scenario.bat <scenario.json> <out-dir>
+
+# play quality: N games between two decks + blunder counts (missed land drops, pumps without attacks…);
+# --jvm-opts passes engine switches such as -Dmagezero.eval.handCardScore=5 for A/B comparisons
+mz bench --deck-a decks/modern/Modern-Prowess.txt --deck-b decks/modern/Modern-Goryos.txt --games 20 --threads 4 --out .mz_tmp/bench/x
 ```
+
+In a game config, a minimax player block can add `advisor: {url: http://127.0.0.1:8765/advise}`: its key
+decisions then go to the bot's play advisor (`advisor.py`, Claude or local qwen with the Modern
+archetypes' game plans), which approves the engine's pick or asks it to search again with other weights.
+The engine fork's `FORK.md` documents the protocol and the game log format.
 
 ## Training a deck while the bot runs
 
@@ -68,9 +77,29 @@ $env:MZ_HEAP = '12g'
 .venv\Scripts\mz train --run configs/run-prowess.yml --game configs/game-prowess.yml
 ```
 
-`configs/run-prowess.yml` trains Modern Prowess against the local Modern pool (minimax opponents),
-`configs/game-prowess.yml` lowers the MCTS budget (800 sims / 2 s per decision) for this PC.
-`--resume` continues the active run in `runs/` with the configuration it was started with.
+`configs/run-prowess.yml` trains Modern Prowess against the local Modern pool (minimax opponents):
+8 generations of 100 games per opponent. `configs/game-prowess.yml` lowers the MCTS budget
+(800 sims / 2 s per decision) for this PC. `configs/run.yml` is a smaller Prowess run (4 games per
+opponent per generation, against Modern-Goryos and the Standard pool); it starts from an existing model
+(`start_from_version: 1`), so it needs `models/Modern-Prowess/ver1/model.pt.gz`. Without one, its
+inference server fails at startup (as on 2026-10-02 17:59); set `start_from_version: null` to bootstrap.
+
+`--resume` continues the active run in `runs/` from its current generation, but with the settings of
+the `--run` file passed now (games per generation, opponents), not the ones recorded in its `run.json`.
+
+### Known issues (2026-10-02)
+
+- **The network does not fit in an 8 GB GPU.** `src/magezero/train.py` trains with a fixed batch of 512
+  samples through a 512-wide transformer over each state's active features. On the RTX 4070 Laptop (8 GB)
+  the first training step of `run-prowess.yml` failed with `CUDA error: out of memory`, after generation 0's
+  300 games had completed. A quick probe also ran out of memory at batch 32, so the length of each state's
+  feature list, not only the batch size, needs attention before training can run here. Unresolved.
+- **Resuming after a failed train stage replays the generation.** Before training, the runner moves the
+  generation's data from `data/<deck>/ver<v>/testing/` to `training/`, but on resume it counts completed
+  games in `testing/`, so it finds none and plays them all again. To retry only the training, run it
+  directly, e.g. `.venv\Scripts\python src/magezero/train.py --deck Modern-Prowess --version 1 --epochs 2`
+  (2 epochs for the bootstrap generation; later generations use 1 epoch plus `--checkpoint`). Then set `current_gen` in the run's `run.json` to
+  the next generation before `--resume`. This follows from reading `runner.py` and has not been tried yet.
 
 ## Modern metagame decks
 

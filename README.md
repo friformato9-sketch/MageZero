@@ -1,5 +1,9 @@
 # MageZero: A Deck-Local AI Framework for Magic: The Gathering
 
+> **This fork:** used by the Devourer of Truth Telegram bot for Modern game simulations, rules scenarios and
+> Modern Prowess training. See [FORK.md](FORK.md) for setup, configs, decks and known issues; the rest of
+> this readme is upstream MageZero's.
+
 ### 1. High-Level Philosophy
 
 MageZero is not a reinforcement learning (RL) agent in itself. It is a framework for training and managing deck-specific RL agents for Magic: The Gathering (MTG). Rather than attempting to generalize across the entire game with a monolithic model, MageZero decomposes MTG into smaller, more tractable subgames. Each deck is treated as a self-contained environment that can be mastered independently using focused, lightweight RL techniques.
