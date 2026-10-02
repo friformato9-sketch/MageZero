@@ -1,6 +1,6 @@
 # run.yml — defines a single deck training run
 
-deck: Standard32-UWB
+deck: Modern-Prowess
 version: 1
 start_from_version: 1     # null = offline bootstrap, set to resume from checkpoint
 
@@ -9,7 +9,7 @@ games_per_gen: 4
 replay_buffer_gens: 10
 
 opponents:
-  - deck: Standard-MonoB
+  - deck: Modern-Goryos
     mode: mcts
     offline: true
   - deck: Standard-MonoG
