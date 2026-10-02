@@ -57,6 +57,21 @@ mz batch --config configs/simulate-modern.yml
 xmage/mz-scenario.bat <scenario.json> <out-dir>
 ```
 
+## Training a deck while the bot runs
+
+The bot uses its own copy of the distribution (`MAGEZERO_XMAGE_DIR`, e.g. `C:\Users\frifo\xmage-bot`),
+so this repo's `xmage/` can be busy with training (Windows locks jars and the card DB in use).
+Cap the training JVM's heap so both fit in RAM:
+
+```powershell
+$env:MZ_HEAP = '12g'
+.venv\Scripts\mz train --run configs/run-prowess.yml --game configs/game-prowess.yml
+```
+
+`configs/run-prowess.yml` trains Modern Prowess against the local Modern pool (minimax opponents),
+`configs/game-prowess.yml` lowers the MCTS budget (800 sims / 2 s per decision) for this PC.
+`--resume` continues the active run in `runs/` with the configuration it was started with.
+
 ## Updating the engine with new XMage cards
 
 New cards exist only once XMage implements them in Java, so updating means merging upstream

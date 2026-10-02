@@ -1,0 +1,28 @@
+# run-prowess.yml — train the Modern Prowess deck against the local Modern pool
+# Start (from the repo root, heap capped so the bot's games still fit in RAM):
+#   $env:MZ_HEAP='12g'; .venv\Scripts\mz train --run configs/run-prowess.yml --game configs/game-prowess.yml --resume
+
+deck: Modern-Prowess
+version: 1
+start_from_version: null  # null = offline bootstrap (no model yet)
+
+generations: 8
+games_per_gen: 100        # per opponent
+replay_buffer_gens: 4
+
+opponents:
+  - deck: Modern-Goryos
+    mode: minimax
+  - deck: Modern-Burn
+    mode: minimax
+  - deck: Modern-BorosEnergy
+    mode: minimax
+
+training:
+  analyze_dataset: true
+  generate_plots: true
+  eval_previous_model: true
+
+log_level: ACTIONS
+curriculum: configs/curriculum.yml
+max_jvms: 1               # one engine at a time: each JVM can take up to MZ_HEAP of RAM
